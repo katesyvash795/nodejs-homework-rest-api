@@ -8,6 +8,8 @@ import {validateBody} from "../../decorators/index.js";
 
 import { userSignupSchema, userSigninSchema } from "../../models/User.js";
 
+import uploadTmp from '../../middlewares/uploadTmp.js';
+
 const authRouter = express.Router();
 
 authRouter.post("/signup", isEmptyBody, validateBody(userSignupSchema), authController.signup);
@@ -17,5 +19,13 @@ authRouter.post("/signin", isEmptyBody, validateBody(userSigninSchema), authCont
 authRouter.get("/current", authenticate, authController.getCurrent);
 
 authRouter.post("/signout", authenticate, authController.signout);
+
+authRouter.patch(
+	'/avatars',
+	authenticate,
+	uploadTmp.single('avatar'),
+	authController.updateAvatar
+);
+
 
 export default authRouter;
