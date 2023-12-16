@@ -84,17 +84,19 @@ const updateAvatar = async (req, res) => {
 
 	const { path: oldPath, filename } = req.file;
 
-	const newPath = path.join(avatarsPath, filename);
+	const image = await Jimp.read(oldPath);
+	image.resize(250, 250);
+	await fs.rename(oldPath, path.join(avatarsPath, filename));
+	await image.write(path.join(avatarsPath, filename));
 
-	(await Jimp.read(oldPath)).resize(250, 250).write(oldPath);
-
-	await fs.rename(oldPath, newPath);
 	const avatarUrl = path.join('avatars', filename);
 
-	await User.findByIdAndUpdate(_id, { avatarUrl }, { new: true });
-	if (error) {
+	const updatedUser = await User.findByIdAndUpdate(_id, { avatarUrl }, { new: true });
+
+	if (!updatedUser) {
 		throw new HttpError(401, `Not authorized`);
 	}
+
 	res.status(200).json({ avatarUrl });
 };
 
