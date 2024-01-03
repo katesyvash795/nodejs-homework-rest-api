@@ -1,21 +1,31 @@
 import express from "express";
-
 import authController from "../../controllers/auth-controller.js";
-
-import {authenticate, isEmptyBody} from "../../middlewares/index.js";
-
-import {validateBody} from "../../decorators/index.js";
-
-import { userSignupSchema, userSigninSchema } from "../../models/User.js";
+import { authenticate, isEmptyBody } from "../../middlewares/index.js";
+import { validateBody } from "../../decorators/index.js";
+import { userSignupSchema, userSigninSchema, updateSubscriptionSchema, userEmailSchema } from "../../models/User.js";
+import uploadTmp from '../../middlewares/uploadTmp.js';
 
 const authRouter = express.Router();
 
 authRouter.post("/signup", isEmptyBody, validateBody(userSignupSchema), authController.signup);
-
 authRouter.post("/signin", isEmptyBody, validateBody(userSigninSchema), authController.signin);
-
 authRouter.get("/current", authenticate, authController.getCurrent);
-
 authRouter.post("/signout", authenticate, authController.signout);
+authRouter.get("/verify/:verificationToken", authController.verify);
+authRouter.post("/verify", validateBody(userEmailSchema), authController.resendVerify);
+
+authRouter.patch(
+	'/avatars',
+	authenticate,
+	uploadTmp.single('avatar'),
+	authController.updateAvatar
+);
+
+authRouter.patch(
+	"/",
+	authenticate,
+	validateBody(updateSubscriptionSchema),
+	authController.updateSubscription
+);
 
 export default authRouter;
